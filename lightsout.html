@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>Lights Out</title>
+        <style>
+            html *
+            {
+                font-family: Arial;
+            }
+            html, body
+            {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+            .row
+            {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+            }
+            .col
+            {
+                box-sizing: border-box;
+                border: 2px solid black;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+				transition: background-color 0.5s;
+				aspect-ratio: 1/1;
+            }
+			.hint
+			{
+				display: block;
+				width: 100%;
+				height: 40%;
+				text-align: center;
+				font-size: 2em;
+				margin-top: 30%;
+                opacity: 0;
+                transition: opacity 0.5s;
+			}
+            .hint.hint_visible
+            {
+                opacity: 1;
+            }
+            .options > *
+            {
+                width: 100%;
+                margin-bottom: 2%;
+            }
+            .options > p
+            {
+                margin: 0;
+            }
+            .patternGallery
+            {
+                display: grid;
+            }
+            .patternGallery > label
+            {
+                width: 100%;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+            .patternGallery > label > img
+            {
+                width: 100%;
+            }
+            .patternGallery input[type="radio"]
+            {
+                display: none;
+            }
+            .patternGallery input[type="radio"]:checked+label
+            {
+                border: 5px solid red;
+				transition: border 0.25s;
+            }
+			label
+			{
+				margin: 0;
+				padding: 0;
+				aspect-ratio: 1 / 1;
+				border: 2px solid white;
+			}
+			label > canvas
+			{
+				width: 100%;
+				aspect-ratio: 1 / 1;
+				margin: 0;
+				padding: 0;
+			}
+            #win_popup
+            {
+                display: block;
+                position: absolute;
+                top: 45vh;
+                left: 10vw;
+                width: 80vw;
+                height: 0vh;
+                background-color: aqua;
+                overflow: hidden;
+                box-sizing: border-box;
+            }
+            #win_popup > #win_info
+            {
+                position: absolute;
+                width: 100%;
+                text-align: center;
+            }
+            @media only screen and (max-width: 700px)
+            {
+                .board
+                {
+                    display: block;
+                    width: 80vw;
+                    margin: 5vh 10vw;
+                }
+                .options
+                {
+                    display: block;
+                    width: 80vw;
+                    margin: 5vh 10vw;
+                }
+                .patternGallery
+                {
+                    grid-template-columns: repeat(4, 1fr);
+                }
+                #win_popup > #win_info
+                {
+                    font-size: 4vh;
+                    margin: 0.5vh 0;
+                }
+            }
+            @media only screen and (min-width: 701px)
+            {
+                .board
+                {
+                    display: inline-block;
+                    width: 40vw;
+                    margin: 5vh 5vw;
+                }
+                .options
+                {
+                    position: absolute;
+                    top: 0;
+                    display: inline-block;
+                    width: 40vw;
+                    height: 40vw;
+                    margin: 5vh 0 0 5vw;
+                }
+                .patternGallery
+                {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                #win_popup > #win_info
+                {
+                    font-size: 5vh;
+                    margin: 2.5vh 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="board">
+            <div class="row">
+                <div class="col" id="f00" onclick="updateFields(0,0)"><span class = "hint"></span></div>
+                <div class="col" id="f01" onclick="updateFields(0,1)"><span class = "hint"></span></div>
+                <div class="col" id="f02" onclick="updateFields(0,2)"><span class = "hint"></span></div>
+                <div class="col" id="f03" onclick="updateFields(0,3)"><span class = "hint"></span></div>
+                <div class="col" id="f04" onclick="updateFields(0,4)"><span class = "hint"></span></div>
+            </div>
+            <div class="row">
+                <div class="col" id="f10" onclick="updateFields(1,0)"><span class = "hint"></span></div>
+                <div class="col" id="f11" onclick="updateFields(1,1)"><span class = "hint"></span></div>
+                <div class="col" id="f12" onclick="updateFields(1,2)"><span class = "hint"></span></div>
+                <div class="col" id="f13" onclick="updateFields(1,3)"><span class = "hint"></span></div>
+                <div class="col" id="f14" onclick="updateFields(1,4)"><span class = "hint"></span></div>
+            </div>
+            <div class="row">
+                <div class="col" id="f20" onclick="updateFields(2,0)"><span class = "hint"></span></div>
+                <div class="col" id="f21" onclick="updateFields(2,1)"><span class = "hint"></span></div>
+                <div class="col" id="f22" onclick="updateFields(2,2)"><span class = "hint"></span></div>
+                <div class="col" id="f23" onclick="updateFields(2,3)"><span class = "hint"></span></div>
+                <div class="col" id="f24" onclick="updateFields(2,4)"><span class = "hint"></span></div>
+            </div>
+            <div class="row">
+                <div class="col" id="f30" onclick="updateFields(3,0)"><span class = "hint"></span></div>
+                <div class="col" id="f31" onclick="updateFields(3,1)"><span class = "hint"></span></div>
+                <div class="col" id="f32" onclick="updateFields(3,2)"><span class = "hint"></span></div>
+                <div class="col" id="f33" onclick="updateFields(3,3)"><span class = "hint"></span></div>
+                <div class="col" id="f34" onclick="updateFields(3,4)"><span class = "hint"></span></div>
+            </div>
+            <div class="row">
+                <div class="col" id="f40" onclick="updateFields(4,0)"><span class = "hint"></span></div>
+                <div class="col" id="f41" onclick="updateFields(4,1)"><span class = "hint"></span></div>
+                <div class="col" id="f42" onclick="updateFields(4,2)"><span class = "hint"></span></div>
+                <div class="col" id="f43" onclick="updateFields(4,3)"><span class = "hint"></span></div>
+                <div class="col" id="f44" onclick="updateFields(4,4)"><span class = "hint"></span></div>
+            </div>
+        </div>
+        <div class="options">
+            <button onclick="showHints()">Podpowiedź</button>
+            <p>Układ:</p>
+            <div class="patternGallery">
+                <input id="p0" type="radio" name="patternType" checked>
+                <label for="p0">
+                    <canvas id="p1c"></canvas>
+                </label>
+                <input id="p1" type="radio" name="patternType">
+                <label for="p1">
+                    <canvas id="p2c"></canvas>
+                </label>
+                <input id="p2" type="radio" name="patternType">
+                <label for="p2">
+                    <canvas id="p3c"></canvas>
+                </label>
+                <input id="p3" type="radio" name="patternType">
+                <label for="p3">
+                    <canvas id="p4c"></canvas>
+                </label>
+            </div>
+            <p>Kolory:</p>
+            <select id="colorsCount">
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+            </select>
+            <input type="button" value="Rozpocznij od nowa" onclick="resetBoard();">
+        </div>
+        <div id="win_popup"></div>
+        <script>
+			function drawPatterns()
+			{
+				var canvas = document.getElementById('p1c');
+				var ctx = canvas.getContext('2d');
+				ctx.fillRect(0, canvas.height/3, canvas.width, canvas.height/3);
+				ctx.fillRect(canvas.width/3, 0, canvas.width/3, canvas.height);
+				
+				
+				
+				canvas = document.getElementById('p2c');
+				ctx = canvas.getContext('2d');
+				ctx.fillRect(canvas.width/3, 0, canvas.width/3 * 2, canvas.height/3);
+				ctx.fillRect(0, canvas.height/3, canvas.width/3 * 2, canvas.height/3);
+				ctx.fillRect(canvas.width/3, canvas.height/3 * 2, canvas.width/3 * 2, canvas.height/3);
+				
+				
+				
+				canvas = document.getElementById('p3c');
+				ctx = canvas.getContext('2d');
+				ctx.fillRect(0, 0, canvas.width, canvas.height/3);
+				ctx.fillRect(canvas.width/3, canvas.height/3, canvas.width/3, canvas.height/3);
+				ctx.fillRect(0, canvas.height/3 * 2, canvas.width, canvas.height/3);
+				
+				
+				
+				canvas = document.getElementById('p4c');
+				ctx = canvas.getContext('2d');
+				ctx.fillRect(canvas.width/3, 0, canvas.width/3, canvas.height/3);
+				ctx.fillRect(canvas.width/3, canvas.height/3, canvas.width/3 * 2, canvas.height/3);
+				ctx.fillRect(0, canvas.height/3 * 2, canvas.width/3 * 2, canvas.height/3);
+			}
+			
+            var selectedPattern = 0, numberOfColors = 3, boardResetting = false, colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'], win = false,
+            patterns = [
+                [
+                    [0, 1, 0],
+                    [1, 1, 1],
+                    [0, 1, 0]
+                ],
+                [
+                    [0, 1, 1],
+                    [1, 1, 0],
+                    [0, 1, 1]
+                ],
+                [
+                    [1, 1, 1],
+                    [0, 1, 0],
+                    [1, 1, 1]
+                ],
+                [
+                    [0, 1, 0],
+                    [0, 1, 1],
+                    [1, 1, 0]
+                ]
+            ],
+            fieldsColors = [
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0]
+            ],
+			fieldsClicks = [
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0]
+            ];
+
+            function updateFields(y, x)
+            {
+                if (!win || boardResetting)
+                {
+                    actions++;
+					fieldsClicks[y][x] = (fieldsClicks[y][x] + (numberOfColors - 1)) % numberOfColors;
+					if(fieldsClicks[y][x] > 0)
+						document.getElementById('f' + y + x).getElementsByClassName('hint')[0].innerHTML = fieldsClicks[y][x];
+					else
+						document.getElementById('f' + y + x).getElementsByClassName('hint')[0].innerHTML = '';
+                    for (i = 0; i < 3; i++)
+                        for (j = 0; j < 3; j++) {
+                            ny = parseInt(y) + parseInt(j) - 1;
+                            nx = parseInt(x) + parseInt(i) - 1;
+                            if (ny >= 0 && ny < 5 && nx >= 0 && nx < 5)
+                                fieldsColors[ny][nx] = (fieldsColors[ny][nx] + patterns[selectedPattern][j][i]) % numberOfColors;
+                        }
+
+                    win = true;
+                    for (i = 0; i < 5; i++)
+                        for (j = 0; j < 5; j++) {
+                            if (i == 0 && j == 0)
+                                var first = fieldsColors[j][i];
+                            else if (first != fieldsColors[j][i])
+                                win = false;
+                            document.getElementById('f' + j + i).style.backgroundColor = colors[fieldsColors[j][i]];
+                        }
+                    if (win && !boardResetting)
+                    {
+                        var win_popup = document.getElementById('win_popup');
+                        win_popup.innerHTML = '<p id="win_info">Gra wygrana po ' + actions + ' ruchach</p>';
+                        var win_info = document.getElementById('win_info');
+                        win_popup.animate(
+                            [
+                                {
+                                    top: '45vh',
+                                    height: '0vh'
+                                },
+                                {
+                                    top: '45vh',
+                                    height: '10vh'
+                                },
+                                {
+                                    top: '45vh',
+                                    height: '10vh'
+                                },
+                                {
+                                    top: '55vh',
+                                    height: '0vh'
+                                }
+                            ],
+                            {
+                                duration: 3000,
+                                iterations: 1
+                            }
+                        );
+                        win_info.animate(
+                            [
+                                {
+                                    top: '0'
+                                },
+                                {
+                                    top: '0'
+                                },
+                                {
+                                    top: '0'
+                                },
+                                {
+                                    top: '-10vh'
+                                }
+                            ],
+                            {
+                                duration: 3000,
+                                iterations: 1
+                            }
+                        );
+                    }
+                    console.log(fieldsColors);
+                }
+            }
+            
+            function resetBoard()
+            {
+                boardResetting = true;
+                win = false;
+                var patternChoice = document.getElementsByName('patternType');
+                for(i = 0; i < 4; i++)
+                    if(patternChoice[i].checked)
+                        selectedPattern = i;
+                numberOfColors = document.getElementById('colorsCount').value;
+                actions = -20;
+                var startColor = Math.floor(Math.random() * 3);
+                for (i = 0; i < 5; i++)
+                    for (j = 0; j < 5; j++)
+                    {
+                        fieldsColors[j][i] = startColor;
+                        document.getElementById('f' + j + i).innerHTML = '<span class = "hint"></span>';
+                    }
+                fieldsClicks = [
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0]
+                ];
+                for (t = 0; t < 20; t++) {
+                    var x = Math.floor(Math.random() * 5);
+                    var y = Math.floor(Math.random() * 5);
+                    updateFields(y, x);
+                }
+                boardResetting = false;
+            }
+            
+            function showHints()
+            {
+                for (i = 0; i < 5; i++)
+                    for (j = 0; j < 5; j++)
+                        hint(i, j);
+            }
+            
+            function hint(x, y)
+            {
+                var field = document.getElementById('f' + y + x);
+                var fieldHint = field.getElementsByClassName('hint')[0];
+                if (fieldHint.innerHTML > 0)
+                    field.animate(
+                        [
+                            {
+                                width: '100%',
+                                margin: '0%'
+                            },
+                            {
+                                width: '95%',
+                                margin: '2.5%'
+                            },
+                            {
+                                width: '100%',
+                                margin: '0%'
+                            }
+                        ],
+                        {
+                            duration: 300,
+                            iterations: 1
+                        }
+                    );
+                fieldHint.classList.toggle('hint_visible');
+            }
+
+            window.onload = function(){ resetBoard(); drawPatterns(); };
+        </script>
+    </body>
+</html>
